@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+{%  include 'layout/head.html'  %} 
+
+{% block extra_head    %}
+{% endblock extra_head    %}
+<body>
+   
+    
+    {% include 'layout/header.html'   %}
+    {%  include 'layout/messages.html' %}
+    {% block content    %}
+    {% endblock content    %}
+    
+</body>
+
+
+{%  include 'layout/footer.html'  %} 
+{%  include 'layout/scripts.html'  %} 
+
+</html>

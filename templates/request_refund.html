@@ -1,0 +1,29 @@
+
+{% extends 'layout/base.html'   %}
+{%  block content   %}
+<main>
+    <div class="container mt-3 pt-3">
+        <div class="mt-3 pt-3 col-md-8  " > 
+            <h1>Refund your orders</h1>
+            <form  method="post">
+ 
+                {%   csrf_token  %}
+            
+                {{form }}
+            
+                <button type="submit" class="btn btn-danger">Request</button>
+            
+            
+                    </form>
+              
+        </div>
+
+        
+
+    </div>
+</main>
+
+
+{%  endblock content   %}
+
+

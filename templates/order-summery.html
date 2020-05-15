@@ -1,0 +1,104 @@
+
+{% extends 'layout/base.html'   %}
+
+{%  block content   %}
+<main>
+    <div class="container mt-3 pt-3">
+    <div class="table-responsive text-nowrap mt-3 pt-3">
+
+        <table class="table mt-3 pt-3">
+            <h2>Order Summery</h2>
+            <thead>
+                <tr>
+                    <th scope="col"  >#</th>
+                    <th scope="col"  >Item title</th>
+                    <th scope="col"  >Price</th>
+                    <th scope="col"  >Quantity</th>
+                    <th scope="col"  >Total Item Price</th>
+                </tr>
+            </thead>
+
+
+            <tbody>
+                
+                {%  for order_item in object.items.all   %}
+                <tr>
+                    <th scope="row">{{  forloop.counter  }}</th>
+                    <td>{{order_item.item.title}} round()</td>
+                    <td>${{order_item.item.price}}</td>
+                    <td>
+                    
+                    <a href="{%  url 'remove-item-from-cart' order_item.item.slug  %}">
+                        <i class="mr-3">-</i>
+                    </a>
+                        {{order_item.quantity}}
+                        <a href="{%  url 'add_to_cart' order_item.item.slug   %}">
+                            <i class="ml-3 ">+</i>
+                        </a>
+                    
+                    </td>
+                
+                    <td>${{order_item.total_price}}
+
+                        <a href="{%  url 'remove_from_cart' order_item.item.slug   %}">
+
+                            <i class="float-right">:():</i>
+                        </a>
+                    </td>
+    
+    
+                </tr>
+
+
+            {% empty   %}
+
+            <tr>
+
+                <td>Your cart is empty</td>
+            </tr>
+                    <tr>
+                        <td colspan="5">
+                            <a class="btn btn-primary float-right ml-3"   href="/">Contineu Shoping</a>
+                        </td>
+
+                    </tr>
+
+
+                {%  endfor   %}
+                
+            </tbody>
+            {%   if object.coupon  %}
+
+            <tr>
+                <td colspan="4"> <b> {{object.coupon}}</b> </td>
+                <td > <b> -${{object.coupon.amount}}  </b> </td>
+            </tr>
+            
+            {%   endif   %}
+            
+            {% if object.get_total  %}
+                    <tr>
+                        <td colspan="4"> <b> Total price </b> </td>
+                        <td > <b> ${{object.get_total}}  </b> </td>
+                    </tr>
+
+                    <tr>
+                        <td colspan="5">
+                            <a class="btn btn-primary float-right ml-3"   href="/">Contineu Shoping</a>
+                            <a class="btn btn-warning float-right"   href="/checkout">Proced to checkout</a>
+                        </td>
+                    </tr>
+            {%endif   %}
+
+
+        </table>
+    </div>
+
+
+    </div>
+</main>
+
+
+{%  endblock content   %}
+
+

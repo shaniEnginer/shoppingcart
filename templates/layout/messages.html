@@ -1,0 +1,17 @@
+<div class="pt-3">
+
+    {%   if messages   %}
+        
+    {% for message in messages   %}
+    <div class="alert alert-{{message.tags}} mt-3 pt-3 mt-5 mt-5 "   >
+   <strong>
+
+       {{message}}
+   </strong>
+    </div>
+    {% endfor %}
+    
+    {%  endif %}
+</div>
+
+

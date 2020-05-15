@@ -1,0 +1,192 @@
+from django.db import models
+from django.conf import settings
+from django.shortcuts import reverse
+
+CATEGORY_CHOICES=(
+
+    ('S','Shirt'),
+    ('SW','Sport ware'),
+    ('OW','Outware'),
+        )
+
+LABLE_CHOICES=(
+
+    ('P','primary'),
+    ('S','secondry'),
+    ('D','danger '),
+    
+      )
+
+class Item(models.Model):
+    title = models.CharField( max_length=22)
+    price = models.FloatField(default=0.0)
+    d_price = models.FloatField(blank=True , null=True)
+    catergory= models.CharField(choices= CATEGORY_CHOICES , max_length=2)
+    lable= models.CharField(choices= LABLE_CHOICES , max_length=1)
+    slug = models.SlugField()
+    description = models.TextField() 
+    image = models.ImageField()
+
+
+
+    def get_absolute_url(self):
+        return reverse("product-view" , kwargs={
+            'slug':self.slug 
+        })
+
+    def get_add_to_cart_url(self):
+        return reverse( 'add_to_cart'  , kwargs={
+            'slug':self.slug    
+        } )
+
+    def remove_from_cart(self):
+
+        return reverse('remove_from_cart' , kwargs={
+            'slug':self.slug
+        })
+
+
+    def __str__(self):
+        return self.title
+
+
+
+class OrderItem(models.Model):
+    
+    user = models.ForeignKey(settings.AUTH_USER_MODEL , on_delete = models.CASCADE , null = True , blank= True)
+    item = models.ForeignKey(Item , on_delete=  models.CASCADE)
+    quantity = models.IntegerField(default=1)
+    orderd= models.BooleanField(default=False)
+    
+
+
+
+    def __str__(self):
+        return self.item.title
+
+    def total_price(self):
+        return self.quantity * self.item.price
+
+    def total_discount_price(self):
+        return self.quantity * self.item.price
+
+
+    def get_final_price(self):
+
+        if  self.item.d_price:
+            return self.total_discount_price()
+        return self.total_discount_price()
+
+
+
+
+
+class Order(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL , on_delete = models.CASCADE)
+    orderd= models.BooleanField(default=False)
+    ref_code = models.CharField(max_length=50)
+    items = models.ManyToManyField(OrderItem )
+    start_date = models.DateTimeField(auto_now_add=True)
+    orderd_date = models.DateTimeField()
+    billing_address = models.ForeignKey('BilligAddress' , on_delete = models.SET_NULL , blank = True , null = True)
+    payment = models.ForeignKey('Payment' , on_delete = models.SET_NULL , blank = True , null = True)
+    coupon = models.ForeignKey( 'Coupon' , on_delete = models.SET_NULL , blank = True , null = True)
+    being_delivered= models.BooleanField(default=False)
+    received= models.BooleanField(default=False)
+    refund_requested= models.BooleanField(default=False)
+    refund_granted= models.BooleanField(default=False)
+
+
+    '''
+    1  Item added to cart
+    2 Adding billing  address
+    3. (Faild charge) Payment
+    ( Preprocessing , packaging , processing , etc)
+
+    4. being delivered 
+    5. Recived 
+    6. refunds 
+
+    '''
+
+
+
+    def get_total(self):
+
+        total = 0
+        for order_item in self.items.all():
+            total += order_item.get_final_price()
+        if self.coupon:
+
+            total  -= self.coupon.amount
+
+        return total
+
+
+
+
+    
+    def __str__(self):
+        return self.user.username
+
+
+
+COUNTRIES=(
+
+    ( 'P', 'pakistan'), 
+    ( 'AF', 'Afghanstan'), 
+    ( 'In', 'India'), 
+
+      )
+
+class BilligAddress(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL , on_delete = models.CASCADE , null = True , blank= True)
+    street_address = models.CharField(max_length=225)
+    apartment_address = models.CharField(max_length=100)
+    contries = models.CharField(choices=COUNTRIES , max_length=5)
+    zip = models.CharField(max_length=100)
+    # same_billing_address = models.
+    # # save_info = models.
+    # # payment_option = models.
+
+    def __str__(self):
+        return f" {self.user.username} 's order"
+
+
+
+
+class Payment(models.Model):
+    stripe_charge_id  = models.CharField( max_length=225)
+    user = models.ForeignKey( settings.AUTH_USER_MODEL , on_delete = models.SET_NULL , blank = True , null = True)
+    amount = models.FloatField()
+    timestamp = models.DateTimeField( auto_now_add= True)
+
+
+    def __str__( self):
+        return self.user.username
+
+
+
+class Coupon(models.Model):
+    code = models.CharField( max_length=22 )
+    amount= models.IntegerField(default=0)
+
+
+
+    def __str__(self):
+        return self.code
+
+
+
+
+
+
+class Refund(models.Model):
+    order = models.ForeignKey( Order , on_delete = models.CASCADE )
+    reason = models.TextField()
+    accepted = models.BooleanField( default=False)
+    email = models.EmailField()
+
+
+    def __str__( self):
+        return f"{self.pk}"
